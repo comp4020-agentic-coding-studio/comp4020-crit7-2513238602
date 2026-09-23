@@ -43,3 +43,17 @@ capacities, facilities and hours in RoomFlow are fictional demo data.
 
 The personal reflection remains explicitly a draft awaiting the student's
 own assessment; mechanical evidence checks do not certify its authorship.
+
+## Production verification
+The first public release passed both jobs in
+[Actions run 35834642917](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-2513238602/actions/runs/35834642917):
+type checking, 31 tests, process evidence, both secret scans, Fly deployment,
+live HTTP response, streaming SSE, HTTPS form handling, CSRF and internal links.
+On the real Fly site, a Collaboration Room booking for 23 September,
+18:30–19:30 was confirmed as `b3d70761`. Reload showed the same record.
+The browser reported no warnings or errors. The subsequent identical HTTP
+submission returned 409 rather than creating a second booking.
+
+Additional local browser checks: 800 ms simulated latency displayed the
+search pending state and then completed; normal networking was restored.
+The README page has its direct-use link and fits the 390×844 viewport.
