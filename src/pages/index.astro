@@ -1,53 +1,65 @@
 ---
-import { listMessages } from "../lib/db";
-import "../styles.css";
-
-const messages = listMessages();
+import { availableRooms, listBookings } from '../lib/repository';
+import { defaults, parseCriteria, clock, canberraNow, addDays } from '../lib/booking-rules';
+import RoomCard from '../components/RoomCard.astro';
+import '../styles.css';
+const today = canberraNow().date;
+const query = Astro.url.searchParams.has('date') ? Astro.url.searchParams : new URLSearchParams(defaults());
+let error = '';
+let rooms: ReturnType<typeof availableRooms> = [];
+let querySummary = '';
+try {
+  const criteria = parseCriteria(query);
+  rooms = availableRooms(criteria);
+  querySummary = criteria.date + ' · ' + clock(criteria.start) + '–' + clock(criteria.end) + ' · Canberra time';
+} catch (e) { error = e instanceof Error ? e.message : 'Please update your search.'; }
+const bookings = listBookings();
+const timeSlots = Array.from({ length: 28 }, (_, i) => clock(480 + i * 30));
 ---
-
 <!doctype html>
 <html lang="en-AU">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>COMP4020 prototype</title>
-  </head>
-  <body>
-    <nav aria-label="site">
-      <a href="/">Guestbook</a>
-      <a href="/readme/">About</a>
-    </nav>
-    <main>
-      <h1>Guestbook</h1>
-      <p>
-        A minimal full-stack starter: messages live in SQLite on the machine's
-        volume (state survives a reload and a redeploy), and new messages
-        appear in every open tab over a server-sent-events stream — open this
-        page twice and sign it in one. Replace all of this with your own
-        prototype.
-      </p>
-      <form method="post" action="/api/messages">
-        <label for="body">Leave a message</label>
-        <input id="body" name="body" required maxlength="500" />
-        <button>Sign</button>
-      </form>
-      <ul id="messages">
-        {messages.map((message) => <li>{message.body}</li>)}
-      </ul>
-    </main>
-    <script>
-      // The live half of the demo: subscribe to the SSE stream and prepend
-      // messages as they arrive. The form itself needs none of this — its
-      // POST + redirect re-renders the submitting tab from SQLite; this
-      // stream is how every other tab finds out.
-      const list = document.querySelector("#messages");
-      const source = new EventSource("/api/events");
-      source.addEventListener("message", (event) => {
-        const message = JSON.parse(event.data);
-        const item = document.createElement("li");
-        item.textContent = message.body;
-        list?.prepend(item);
-      });
-    </script>
-  </body>
-</html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Find a study space that fits your plans. A student-made ANU room booking prototype with live availability."/>
+<title>RoomFlow — Make room for good work</title></head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><a href="/" class="brand" aria-label="RoomFlow home"><span class="brand-mark" aria-hidden="true">r.</span>roomflow<span class="brand-dot">®</span></a>
+<nav aria-label="Main navigation"><a href="#spaces" aria-current="page">Find a space</a><a href="#bookings">Bookings</a><a href="/readme/">About the project <span aria-hidden="true">↗</span></a></nav>
+<span class="prototype-badge">ANU STUDENT PROTOTYPE</span></header>
+<main id="main">
+<section class="hero"><div class="hero-copy"><p class="eyebrow"><span></span> A LITTLE SPACE. A LOT OF POSSIBILITY.</p>
+<h1>Make room<br/>for <em>good work.</em></h1>
+<p class="intro">Your next great idea needs somewhere to land.<br class="desktop-break"/> Find a study space that fits the way you work.</p>
+<div class="hero-foot"><span class="tiny-star" aria-hidden="true">✳</span><span>Less looking around.<br/><strong>More getting somewhere.</strong></span></div></div>
+<div class="hero-illustration" aria-hidden="true"><div class="illustration-orbit"></div><span class="hero-note">YOUR IDEAS<br/>BELONG HERE.</span><div class="hero-room"><span class="big-window"></span><span class="big-board"></span><span class="big-floor"></span><span class="big-table"></span><span class="big-chair first"></span><span class="big-chair second"></span><span class="big-plant"></span><span class="little-book"></span></div><span class="floating-label">A place to focus. A place to begin.</span><span class="spark-one">✳</span></div>
+</section>
+<div class="demo-notice"><span aria-hidden="true">◈</span><p><strong>A campus idea, ready to try.</strong> Fictional rooms and shared demo bookings. This does not reserve a real ANU room.</p><a href="#how-it-works">How it works ↓</a></div>
+<section id="spaces" class="workspace" aria-labelledby="spaces-title">
+<aside class="search-panel"><p class="eyebrow">01 / YOUR PLANS</p><h2 id="spaces-title">What do you need?</h2><p class="muted">Start with your plans. We'll find the space.</p>
+<form id="search-form" method="get" action="/#spaces">
+<label for="date">Date</label><input id="date" name="date" type="date" required min={today} max={addDays(today, 30)} value={query.get('date')}/>
+<div class="form-pair"><div><label for="time">Start time</label><select id="time" name="time">{timeSlots.map(time => <option value={time} selected={query.get('time') === time}>{time}</option>)}</select></div>
+<div><label for="duration">Stay for</label><select id="duration" name="duration">{[30,60,90,120].map(n => <option value={n} selected={query.get('duration') === String(n)}>{n < 60 ? '30 minutes' : n === 60 ? '1 hour' : n === 90 ? '1.5 hours' : '2 hours'}</option>)}</select></div></div>
+<p class="field-hint">08:00–22:00 · Canberra local time</p>
+<div class="form-pair"><div><label for="people">People</label><select id="people" name="people">{Array.from({length:12},(_,i)=>i+1).map(n=><option value={n} selected={query.get('people') === String(n)}>{n === 1 ? 'Just me' : n + ' people'}</option>)}</select></div>
+<div><label for="mode">Made for</label><select id="mode" name="mode"><option value="group" selected={query.get('mode') === 'group'}>Group work</option><option value="quiet" selected={query.get('mode') === 'quiet'}>Quiet study</option><option value="any" selected={query.get('mode') === 'any'}>Either</option></select></div></div>
+<fieldset><legend>The little extras</legend><label class="check"><input type="checkbox" name="whiteboard" value="1" checked={query.has('whiteboard')}/><span>Whiteboard</span><span aria-hidden="true">▤</span></label><label class="check"><input type="checkbox" name="screen" value="1" checked={query.has('screen')}/><span>Display screen</span><span aria-hidden="true">▱</span></label><label class="check"><input type="checkbox" name="accessible" value="1" checked={query.has('accessible')}/><span>Step-free access</span><span aria-hidden="true">↗</span></label></fieldset>
+<button id="find-spaces" class="primary" type="submit">Find a space <span aria-hidden="true">→</span></button>
+<p class="field-hint">Book up to 30 days ahead. No account needed.</p></form>
+</aside>
+<div class="results-panel"><div class="results-heading"><div><p class="eyebrow">02 / YOUR POSSIBILITIES</p><h2>Spaces that fit <span id="result-count">{String(rooms.length).padStart(2,'0')}</span></h2></div><span class="live-pill"><i></i><span id="live-status">Live availability</span></span></div>
+<p id="result-summary">{querySummary}</p><p id="search-status" role="status" aria-live="polite">{error || rooms.length + ' spaces match your plans.'}</p>
+<div id="rooms" class="room-grid" aria-busy="false">{rooms.map(room=><RoomCard room={room}/>)}</div>
+<div id="empty-state" class="empty-state" hidden={rooms.length > 0 || !!error}><span aria-hidden="true">↗</span><h3>A little flexibility goes a long way.</h3><p>No rooms match all your plans. Try another time, fewer people or fewer extras.</p><button id="reset-filters" type="button" class="secondary">Show all room types</button></div>
+<noscript><p>Search works without JavaScript. Enable JavaScript to confirm a booking and receive live availability updates.</p></noscript>
+</div></section>
+<section id="bookings" class="bookings-section" aria-labelledby="bookings-title"><div class="section-title"><div><p class="eyebrow">03 / ON THE CALENDAR</p><h2 id="bookings-title">Plans with a place. <span id="bookings-count">{bookings.length}</span></h2></div><button class="secondary" id="refresh-bookings" type="button">Refresh <span aria-hidden="true">↻</span></button></div>
+<p class="muted">The next 60 bookings from everyone trying this demo. Refresh the page — they'll still be here.</p>
+<ul id="booking-list" class="booking-list">{bookings.map(b=><li><div><strong>{b.roomName}</strong><span>{b.building} · {b.people} people</span></div><div><strong>{b.date} · {clock(b.start)}–{clock(b.end)}</strong><span>Confirmed · <span title={b.id}>{b.id.slice(0,8)}</span></span></div></li>)}</ul>
+<p id="no-bookings" class="no-bookings" hidden={bookings.length > 0}>An open calendar. A good place to start.</p><p id="booking-refresh-status" class="field-hint" role="status"></p></section>
+<section id="how-it-works" class="how-section" aria-labelledby="how-title"><div><p class="eyebrow">SPACE, WITHOUT THE RUNAROUND</p><h2 id="how-title">From “where?”<br/>to “see you there.”</h2></div><ol><li><span>01</span><div><h3>Bring your plans</h3><p>Tell us when, how many and what you need.</p></div></li><li><span>02</span><div><h3>Find your fit</h3><p>See spaces that actually match, with availability checked live.</p></div></li><li><span>03</span><div><h3>Make it happen</h3><p>Confirm a demo booking. It's saved, even after a refresh.</p></div></li></ol></section>
+</main>
+<footer><a href="/" class="brand">roomflow<span class="brand-dot">®</span></a><p>Made for better days on campus.<br/>Student concept · Not an official ANU service.</p><a href="/readme/">The thinking behind it ↗</a></footer>
+<dialog id="booking-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-details"><div class="dialog-content"><span id="confirmation-icon" hidden aria-hidden="true">✓</span><p class="eyebrow">YOUR NEXT STUDY SESSION</p><h2 id="dialog-title">Confirm your space</h2><p id="dialog-details"></p><p class="dialog-note">A shared demo booking, visible to other visitors. No personal details needed.</p><p id="booking-status" role="status" aria-live="polite"></p><div class="dialog-actions"><button id="confirm-booking" type="button" class="primary">Confirm demo booking</button><button id="dialog-close" type="button" class="secondary">Go back</button></div></div></dialog>
+<script>import '../lib/client';</script>
+</body></html>

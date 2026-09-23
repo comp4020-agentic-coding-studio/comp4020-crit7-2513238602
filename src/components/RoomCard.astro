@@ -1,0 +1,27 @@
+---
+import type { Room } from '../lib/schema';
+import { clock } from '../lib/booking-rules';
+const { room } = Astro.props as { room: Room & { nextBooking: number | null } };
+---
+<article class="room-card">
+  <div class:list={['room-art', room.mode === 'quiet' ? 'quiet' : 'group']} aria-hidden="true">
+    <span class="art-window"></span><span class="art-shelf"></span><span class="art-rug"></span>
+    <span class="art-table"></span><span class="art-chair chair-one"></span><span class="art-chair chair-two"></span>
+    <span class="art-plant"></span><span class="art-label">{room.mode === 'quiet' ? 'A LITTLE HEADSPACE' : 'BETTER TOGETHER'}</span>
+    <span class="capacity">{room.capacity} seats</span>
+  </div>
+  <div class="card-body">
+    <div class="card-meta"><span>{room.building}</span><span class="available">Available</span></div>
+    <h3>{room.name}</h3><p class="floor">{room.floor}</p>
+    <p class="room-description">{room.description}</p>
+    <ul class="features" aria-label="Room facilities">
+      <li>{room.mode === 'quiet' ? 'Quiet study' : 'Group work'}</li>
+      {room.whiteboard && <li>Whiteboard</li>}{room.screen && <li>Display</li>}
+      {room.accessible && <li>Step-free</li>}
+    </ul>
+    <div class="card-bottom"><span>{room.nextBooking === null ? 'No later bookings today' : 'Next booking ' + clock(room.nextBooking)}</span>
+      <button type="button" class="choose-room" data-room-id={room.id} data-room-name={room.name} data-building={room.building}
+        aria-label={'Choose ' + room.name}>Choose room <span aria-hidden="true">↗</span></button></div>
+  </div>
+</article>
+

@@ -19,10 +19,10 @@ const html = (await readme.compiledContent()).replace(/(src|href)="public\//g, '
     <title>{title}</title>
   </head>
   <body>
-    <nav aria-label="site">
-      <a href="/">Guestbook</a>
-      <a href="/readme/">About</a>
+    <nav aria-label="site" class="site-header">
+      <a href="/" class="brand">roomflow®</a>
+      <a href="/readme/" aria-current="page">About the project</a>
     </nav>
-    <main set:html={html} />
+    <main class="readme-page" set:html={html} />
   </body>
 </html>
