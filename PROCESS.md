@@ -1,54 +1,37 @@
-# Process overview
+# RoomFlow process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
+RoomFlow implements the approved requirements-first room-booking plan:
+filter, choose, confirm, then see the same booking after a reload. The
+inventory is explicitly fictional; the workflow is grounded in ANU Library's
+bookable-spaces context, linked in README.
 
-Written by you, for a reader: how you got from the brief to the harness and
-agentic workflow behind this submission. Markers read this file and follow its
-citations; they don't trawl the repo for evidence you didn't point at.
+The user instruction that authorised implementation was:
 
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
+> 请你实现这个方案
 
-## What I built
+Before implementation, the working rules and HTTP contracts were committed in
+[`4a0b0c9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-2513238602/commit/4a0b0c9).
+The first test run against the starter produced five failures: the booking
+and search routes returned 404, and no inventory event arrived. The existing
+CSRF protection already passed. This established a concrete baseline rather
+than treating an attractive interface as completion.
 
-A sentence or two. `README.md` is where the account of what the app is and what
-good means here lives; this file is how you got there.
+The schema and migration in
+[`3da488b`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-2513238602/commit/3da488b)
+encode room relationships and time ranges. The service implementation in
+[`2c99da5`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-2513238602/commit/2c99da5)
+rechecks availability inside an immediate transaction. Five competing requests
+produce one successful booking and four conflicts; adjacent sessions remain
+valid. This makes availability a server promise, not merely a label on a card.
 
-## How I got here
+The interface in
+[`287192e`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-2513238602/commit/287192e)
+was exercised at 1920×1080 and 390×844. Both completed real bookings and
+retained them after reload. Keyboard testing exposed a focus mistake:
+the success button was focused while disabled. Moving focus until after
+reenabling it corrected the interaction. All 31 tests passed in the first
+complete implementation run; the acceptance record tracks subsequent checks.
 
-The account of the process: how the work actually went, and how you knew the
-result was right. Tell it in whatever order makes it clear. A weekly prototype
-needs a paragraph or two; an assignment needs more.
-
-Cite the record as you go, as links whose text is the commit hash or range and
-whose target is this repo's commit or compare URL, so a reader clicks straight
-to the evidence:
-
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
-
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
-
-> the prompt, verbatim
-
-Screenshots are welcome where one carries the point better than a sentence does.
-Commit the file to this repo and link it with a **relative** path, which is what
-makes it render on GitHub: `![alt text](docs/before.png)`. Images don't count
-towards the word count and don't replace the citation.
-
-## Before you ship
-
-`pnpm check:evidence` verifies that this comment is gone, that your citations
-resolve to real commits, that a crit week's reflection entry is in
-`reflections/`, and that your `CLAUDE.md` is there. It checks that your account
-is traceable, not that it is good: that is the marker's call.
-
-Images aren't checked: unlike a citation whose SHA doesn't resolve, a broken
-image is visible the moment this file is rendered on GitHub.
+This overview was prepared with the coding agent from the actual development
+record. Personal experience and reflection require the student's review;
+neither has been invented as test evidence.

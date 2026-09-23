@@ -26,3 +26,20 @@ This motivates filtering by needs. It does not prove the old interface is
 unusable or that the student has personally used it. Inventory, names,
 capacities, facilities and hours in RoomFlow are fictional demo data.
 
+## Verified locally, 23 September 2026
+- `pnpm check`: 31 tests passed; zero type errors, warnings or hints.
+- `pnpm check:evidence`: reflection filename and four commit citations pass.
+- 1920×1080: actual keyboard confirmation for Collaboration Room succeeded.
+- 390×844: quiet-study search and Reading Room confirmation succeeded.
+- DOM widths: desktop 1905 <= 1920; phone 375 <= 390 (scrollbar included).
+- Reload retained both IDs; stopping and restarting the production server
+  with the same SQLite file retained both records again.
+- Two browser tabs opened the same Discussion Room confirmation. The second
+  tab reserved it; the first received the expected conflict message, while
+  the inventory and booking list updated live.
+- Successful confirmation now puts keyboard focus on `dialog-close`.
+- A search for 12 people shows an actionable empty state.
+- Browser UI and HTTP checks use the actual production server build.
+
+The personal reflection remains explicitly a draft awaiting the student's
+own assessment; mechanical evidence checks do not certify its authorship.

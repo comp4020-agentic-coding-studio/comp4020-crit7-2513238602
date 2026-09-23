@@ -23,6 +23,7 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY scripts/prepare.mjs ./scripts/prepare.mjs
 RUN pnpm install --frozen-lockfile --prod=false
 
 COPY . .
